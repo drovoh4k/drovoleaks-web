@@ -1,0 +1,29 @@
+# ── Jekyll: salida de build y cachés (se regeneran solos) ────────────────────
+/_site/
+/.jekyll-cache/
+/.jekyll-metadata
+/.sass-cache/
+
+# ── Bundler / gems (lo que crea `bundle install`, NO se versiona) ─────────────
+# Anclados con "/" para ignorar SOLO la carpeta de la raíz. Sin la barra,
+# `vendor/` también casaba con assets/vendor/ y dejaba fuera fuse.min.js (la
+# librería del buscador) → 404 en producción. No repetir ese fallo.
+/vendor/
+/.bundle/
+# Gemfile.lock NO se commitea: el build local (Ruby 2.6) y el deploy (Ruby 3.3)
+# necesitan versiones de gems distintas, así que un lock único rompía CI. Cada
+# entorno resuelve el suyo; el Gemfile fija las versiones mayores.
+/Gemfile.lock
+
+# ── Python (tools/) ──────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+
+# ── OS / editores ────────────────────────────────────────────────────────────
+.DS_Store
+*.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+node_modules/

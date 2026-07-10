@@ -1,0 +1,104 @@
+# ── DROVOLEAKS · Jekyll config ────────────────────────────────────────────────
+title: Drovoleaks
+tagline: reversing · pwn · malware
+description: >-
+  Archivo ordenado del canal de @drovoh4k: writeups, cursos, masterclass,
+  tutoriales, análisis de vulnerabilidades y comparativas. Cada vídeo con su
+  material, enlaces y documentos para replicarlo.
+# Dominio final del sitio (apex). El `baseurl` queda vacío al servir en la raíz.
+url: "https://drovoleaks.re"
+baseurl: ""
+lang: es
+
+author:
+  name: drovoh4k
+  youtube: https://www.youtube.com/@drovoh4k
+  discord: https://discord.gg/kFrpheJkdN
+
+# ── Todo el contenido vive bajo content/ (collections_dir) para no ensuciar la
+#    raíz. Los permalinks son explícitos, así que las URLs NO cambian.
+collections_dir: content
+
+# ── Colecciones: una por categoría, todas con salida ─────────────────────────
+collections:
+  writeups:
+    output: true
+    permalink: /writeups/:path/
+  cursos:
+    output: true
+    permalink: /cursos/:path/
+  masterclass:
+    output: true
+    permalink: /masterclass/:path/
+  vulnerabilidades:
+    output: true
+    permalink: /vulnerabilidades/:path/
+  varios:
+    output: true
+    permalink: /varios/:path/
+  papers:
+    output: true
+    permalink: /papers/:path/
+
+# ── Valores por defecto del front matter ─────────────────────────────────────
+defaults:
+  - scope: { path: "", type: writeups }
+    values: { layout: entry, categoria_slug: writeups }
+  - scope: { path: "", type: cursos }
+    values: { layout: entry, categoria_slug: cursos }
+  - scope: { path: "", type: masterclass }
+    values: { layout: entry, categoria_slug: masterclass }
+  - scope: { path: "", type: vulnerabilidades }
+    values: { layout: entry, categoria_slug: vulnerabilidades }
+  - scope: { path: "", type: varios }
+    values: { layout: entry, categoria_slug: varios }
+  - scope: { path: "", type: papers }
+    values: { layout: entry, categoria_slug: papers }
+
+# ── Plugins ──────────────────────────────────────────────────────────────────
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# RSS. El feed PRINCIPAL /feed.xml es un Atom agregado propio (feed.xml en la
+# raíz) que recorre todas las colecciones; jekyll-feed genera además un feed por
+# colección y su feed base (sin _posts) se aparta a /feed.posts.xml para no
+# colisionar con el agregado.
+feed:
+  path: /feed.posts.xml
+  collections:
+    writeups: { path: /feed.writeups.xml }
+    cursos: { path: /feed.cursos.xml }
+    masterclass: { path: /feed.masterclass.xml }
+    vulnerabilidades: { path: /feed.vulnerabilidades.xml }
+    varios: { path: /feed.varios.xml }
+    papers: { path: /feed.papers.xml }
+
+# ── Markdown / resaltado ─────────────────────────────────────────────────────
+# Aborta el build si una entrada tiene el front matter mal formado (no lo publica roto).
+strict_front_matter: true
+
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: highlight
+  hard_wrap: false
+
+
+# ── Exclusiones ──────────────────────────────────────────────────────────────
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - tools
+  - bin
+  - node_modules
+  - README.md
+  - CONTRIBUTING.md
+  - "*.DS_Store"
+  - .github
+keep_files:
+  - .git

@@ -1,0 +1,26 @@
+{%- comment -%}
+  Comentarios con giscus (discusiones de GitHub). DESACTIVADO por defecto: solo
+  aparece si en _config.yml defines el bloque `giscus:` con repo + repo_id +
+  category_id (ver instrucciones en _config.yml). Carga diferida; tema según el del
+  sistema. Al activarlo, la CSP de default.html añade sola el origen giscus.app.
+{%- endcomment -%}
+{%- if site.giscus and site.giscus.repo and site.giscus.repo_id and site.giscus.category_id -%}
+<section class="comments" aria-label="Comentarios">
+  <h3 class="ressec__title">Comentarios</h3>
+  <script src="https://giscus.app/client.js"
+          data-repo="{{ site.giscus.repo }}"
+          data-repo-id="{{ site.giscus.repo_id }}"
+          data-category="{{ site.giscus.category | default: 'General' }}"
+          data-category-id="{{ site.giscus.category_id }}"
+          data-mapping="pathname"
+          data-strict="1"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="top"
+          data-theme="{{ site.giscus.theme | default: 'preferred_color_scheme' }}"
+          data-lang="es"
+          data-loading="lazy"
+          crossorigin="anonymous"
+          async></script>
+</section>
+{%- endif -%}

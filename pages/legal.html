@@ -1,0 +1,42 @@
+---
+layout: default
+permalink: /legal/
+title: Aviso legal y política de mirrors
+descripcion: "Cómo se alojan los materiales de retos (mirrors), licencias, integridad (SHA-256) y procedimiento de retirada."
+---
+<div class="itemwrap acc-bad">
+  <p class="sec-eye">transparencia</p>
+  <h1 class="h2">Aviso legal y política de mirrors</h1>
+
+  <div class="prose" style="max-width:60rem;margin-top:1.4rem">
+    <p><b>Drovoleaks</b> es un archivo educativo del canal <a href="{{ site.author.youtube }}" target="_blank" rel="noopener">@drovoh4k</a>:
+    writeups, cursos y análisis de vulnerabilidades con fines de aprendizaje e investigación en seguridad.</p>
+
+    <h2>Mirrors de retos</h2>
+    <p>Algunas entradas alojan una <b>copia local (mirror)</b> del material del reto (por ejemplo, el <code>.zip</code> de un
+    crackme) para que el contenido no dependa de terceros que puedan caerse. Siempre que es posible se enlaza también la
+    <b>fuente original</b>. Descarga y ejecuta ese material <b>bajo tu responsabilidad</b> y en un entorno aislado.</p>
+
+    <h2>Integridad (SHA-256)</h2>
+    <p>Cada fichero descargable muestra su huella <b>SHA-256</b> en el diálogo de descarga. Puedes verificar que lo que bajas
+    es exactamente lo alojado aquí:</p>
+    <pre><code>sha256sum fichero.zip   # Linux
+shasum -a 256 fichero.zip   # macOS
+Get-FileHash fichero.zip -Algorithm SHA256   # Windows</code></pre>
+
+    <h2>Licencias y autoría</h2>
+    <p>Los retos, binarios y documentos son propiedad de sus respectivos autores y plataformas (crackmes.one, organizadores de
+    CTF, etc.). Se respetan sus términos; el mirror no implica cesión de derechos. El material propio (writeups, diagramas,
+    scripts y explicaciones) es de <b>drovoh4k</b>, con fines educativos.</p>
+
+    <h2>Retirada de contenido</h2>
+    <p>Si eres el autor o titular de derechos de algún material y quieres que se <b>retire o se ajuste la atribución</b>,
+    escríbenos por el <a href="{{ site.author.discord }}" target="_blank" rel="noopener">Discord</a> y lo resolvemos con
+    rapidez. La intención es divulgar y dar crédito, nunca perjudicar a nadie.</p>
+
+    <h2>Privacidad</h2>
+    <p>El sitio es estático y no usa cookies de seguimiento. Las fuentes y scripts se sirven desde el propio dominio. Los
+    vídeos se cargan solo al pulsar (fachada) y desde <code>youtube-nocookie.com</code>. El visor de diagramas carga su
+    librería bajo demanda desde una CDN pública únicamente cuando abres un diagrama.</p>
+  </div>
+</div>

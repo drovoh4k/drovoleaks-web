@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────────
+# nueva-entrada — scaffolder de entradas para el sitio DROVOLEAKS.
+#
+# Crea una carpeta "page bundle" (index.md + subcarpetas de assets) a partir de
+# la plantilla del tipo elegido, con el front matter y el permalink correctos.
+# Tras crearla, la entrada aparece SOLA en su índice, buscador, filtros y tags.
+#
+# Uso:
+#   bin/nueva-entrada <tipo> <ruta-relativa> ["Título"]
+#
+# tipos: writeup | curso | masterclass | tutorial | vulnerabilidad | varios
+#
+# Ejemplos:
+#   bin/nueva-entrada writeup crackmes/crackmes.one/mi-reto "Mi Reto"
+#   bin/nueva-entrada vulnerabilidad cve-2027-1234 "CVE-2027-1234 (FooBug)"
+#   bin/nueva-entrada curso introduccion-reversing/4-windows/4.1-pe "Formato PE"
+# ─────────────────────────────────────────────────────────────────────────────
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+usage() { sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
+
+[ $# -ge 2 ] || usage
+TIPO="$1"
+RUTA="${2#/}"; RUTA="${RUTA%/}"
+TITULO="${3:-}"
+
+case "$TIPO" in
+  writeup)         COL="_writeups";           PREFIX="/writeups/";           TPL="writeup.md";        SUBDIRS="challenge scripts resources" ;;
+  curso)           COL="_cursos";             PREFIX="/cursos/";             TPL="curso-clase.md";    SUBDIRS="resources" ;;
+  masterclass)     COL="_masterclass";        PREFIX="/masterclass/";        TPL="masterclass.md";    SUBDIRS="resources" ;;
+  # Los tutoriales viven integrados dentro de Varios (bajo /varios/tutoriales/).
+  tutorial)        COL="_varios/tutoriales";  PREFIX="/varios/tutoriales/";  TPL="tutorial.md";       SUBDIRS="resources" ;;
+  vulnerabilidad)  COL="_vulnerabilidades";   PREFIX="/vulnerabilidades/";   TPL="vulnerabilidad.md"; SUBDIRS="resources" ;;
+  varios)          COL="_varios";             PREFIX="/varios/";             TPL="varios.md";         SUBDIRS="resources" ;;
+  *) echo "✗ tipo desconocido: '$TIPO'"; echo; usage ;;
+esac
+
+DEST="content/$COL/$RUTA"    # las colecciones viven bajo content/ (collections_dir)
+TEMPLATE="_templates/$TPL"
+[ -f "$TEMPLATE" ] || { echo "✗ falta la plantilla $TEMPLATE"; exit 1; }
+[ -e "$DEST" ] && { echo "✗ ya existe: $DEST"; exit 1; }
+
+# Título por defecto: último segmento de la ruta, con espacios y capitalizado.
+if [ -z "$TITULO" ]; then
+  TITULO="$(basename "$RUTA" | tr '-_' '  ')"
+fi
+FECHA="$(date +%F)"
+PERMALINK="${PREFIX}${RUTA}/"
+
+mkdir -p "$DEST"
+for d in $SUBDIRS; do mkdir -p "$DEST/$d"; touch "$DEST/$d/.gitkeep"; done
+
+# Sustitución literal y segura de los tokens (python3 evita problemas con & / \).
+TITULO="$TITULO" FECHA="$FECHA" PERMALINK="$PERMALINK" TEMPLATE="$TEMPLATE" DEST="$DEST" \
+python3 - <<'PY'
+import os
+tpl = open(os.environ["TEMPLATE"], encoding="utf-8").read()
+tpl = tpl.replace("__TITULO__", os.environ["TITULO"])
+tpl = tpl.replace("__FECHA__", os.environ["FECHA"])
+tpl = tpl.replace("__PERMALINK__", os.environ["PERMALINK"])
+open(os.path.join(os.environ["DEST"], "index.md"), "w", encoding="utf-8").write(tpl)
+PY
+
+echo "✓ creada: $DEST/index.md"
+echo "  permalink: $PERMALINK"
+echo "  assets:   $DEST/{$(echo "$SUBDIRS" | tr ' ' ',')}/"
+echo
+echo "Siguiente:"
+echo "  1) edita $DEST/index.md (title, descripcion, video, tags, recursos…)"
+echo "  2) pon draft: false cuando esté listo"
+echo "  3) bundle exec jekyll serve  →  aparece en su índice, buscador y tags"

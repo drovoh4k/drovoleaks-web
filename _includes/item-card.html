@@ -1,0 +1,49 @@
+{%- comment -%}
+Tarjeta reutilizable de entrada (home · novedades e índices de categoría).
+Parámetros:
+  include.item   documento de una colección
+  include.cat    (opcional) objeto de categoría; si falta se deriva del item
+{%- endcomment -%}
+{%- assign it = include.item -%}
+{%- assign cat = include.cat -%}
+{%- unless cat -%}{%- assign cat = site.data.categorias | where: "slug", it.categoria_slug | first -%}{%- endunless -%}
+{%- assign tagblob = it.tags | join: "|" | downcase -%}
+{%- capture searchblob -%}{{ it.title }} {{ it.tags | join: " " }} {{ it.descripcion }} {{ it.categoria }} {{ it.dificultad }} {{ it.arquitectura }} {{ it.lenguaje }} {{ it.fuente }} {{ it.evento }} {{ it.tema }} {{ it.cve }} {{ it.alias }} {{ it.producto }} {{ it.curso }}{%- endcapture -%}
+<a class="icard {{ cat.accent_class }}"
+   href="{{ it.url | relative_url }}"
+   data-search="{{ searchblob | strip_newlines | strip | escape }}"
+   data-title="{{ it.title | escape }}"
+   data-tags="{{ tagblob | escape }}"
+   {% if it.categoria %}data-categoria="{{ it.categoria | downcase | escape }}"{% endif %}
+   {% if it.dificultad %}data-dificultad="{{ it.dificultad | downcase | escape }}"{% endif %}
+   {% if it.arquitectura %}data-arquitectura="{{ it.arquitectura | downcase | escape }}"{% endif %}
+   {% if it.lenguaje %}data-lenguaje="{{ it.lenguaje | downcase | escape }}"{% endif %}
+   {% if it.subtipo %}data-subtipo="{{ it.subtipo | downcase | escape }}"{% endif %}
+   {% if it.fuente %}data-fuente="{{ it.fuente | downcase | escape }}"{% endif %}
+   {% if it.tema %}data-tema="{{ it.tema | downcase | escape }}"{% endif %}
+   {% if it.producto %}data-producto="{{ it.producto | downcase | escape }}"{% endif %}
+   {% if it.impacto %}data-impacto="{{ it.impacto | downcase | escape }}"{% endif %}
+   {% if it.nivel %}data-nivel="{{ it.nivel | downcase | escape }}"{% endif %}>
+  {%- comment -%} Tarjeta unificada: fecha completa (eyebrow) · título · tags (categoría coloreada primero). {%- endcomment -%}
+  {%- unless it.date_placeholder -%}
+  <div class="im">
+    <span class="pl" aria-hidden="true">▶</span>
+    <span>{% include fecha.html date=it.date long=true %}</span>
+  </div>
+  {%- endunless -%}
+  <div class="it">{{ it.title }}{% if it.draft %}<span class="draftflag">borrador</span>{% endif %}</div>
+  {%- unless it.categoria_slug == "writeups" -%}{%- if it.descripcion %}<p class="id">{{ it.descripcion }}</p>{% endif -%}{%- endunless -%}
+  {%- if it.tags.size > 0 or it.dificultad -%}
+  <div class="tags">
+    {%- comment -%} categoría (Reversing/Crypto…) como PRIMER tag, coloreada {%- endcomment -%}
+    {%- if it.categoria -%}<span class="tag tag-cat cat-{{ it.categoria | slugify }}">{{ it.categoria }}</span>{%- endif -%}
+    {%- if it.dificultad -%}
+      {%- assign dl = it.dificultad | downcase -%}
+      {%- assign dclass = "dif-meta" -%}
+      {%- if dl contains "dif" -%}{% assign dclass = "dif-dificil" %}{%- elsif dl contains "fácil" or dl contains "facil" -%}{% assign dclass = "dif-facil" %}{%- elsif dl contains "media" -%}{% assign dclass = "dif-media" %}{%- endif -%}
+      <span class="tag {{ dclass }}">{{ it.dificultad }}</span>
+    {%- endif -%}
+    {%- for t in it.tags limit: 6 -%}{%- unless t == it.categoria -%}<span class="tag">{{ t }}</span>{%- endunless -%}{%- endfor -%}
+  </div>
+  {%- endif -%}
+</a>

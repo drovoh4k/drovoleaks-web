@@ -1,0 +1,81 @@
+# ── Definición única de las 6 categorías del canal ───────────────────────────
+# Todo lo demás (nav, contadores, home, índices, breadcrumb, colores) se deriva
+# de aquí. `order` fija el orden visual; `collection` enlaza con la colección
+# Jekyll (_writeups, _cursos, …).
+- slug: writeups
+  collection: writeups
+  label: WriteUps
+  icon: flag
+  accent_class: acc-fwd
+  accent: "#5cd7ea"
+  kicker: análisis paso a paso
+  desc: >-
+    Resoluciones detalladas de retos, CTFs y binarios — el camino completo,
+    del bug a la flag.
+  order: 1
+  filters: [categoria, dificultad, arquitectura, lenguaje]
+
+- slug: cursos
+  collection: cursos
+  label: Cursos
+  icon: cap
+  accent_class: acc-xor
+  accent: "#9d6cf5"
+  kicker: formación estructurada
+  desc: >-
+    Rutas largas por módulos, de cero a operativo. Cada curso tiene su propio
+    índice de lecciones.
+  order: 2
+  # cuenta cursos (no clases sueltas)
+  count_by: curso_slug
+
+- slug: masterclass
+  collection: masterclass
+  label: Masterclass
+  icon: present
+  accent_class: acc-inv
+  accent: "#ec5cd6"
+  kicker: sesiones monográficas
+  desc: >-
+    Inmersiones de una sola sesión en una técnica concreta para quien ya domina
+    los fundamentos.
+  order: 3
+  filters: [nivel]
+
+- slug: vulnerabilidades
+  collection: vulnerabilidades
+  label: Vulnerabilidades
+  icon: bug
+  accent_class: acc-bad
+  accent: "#ff5470"
+  kicker: análisis de CVEs
+  desc: >-
+    Causa raíz, impacto y condiciones de explotación de CVEs reales, con PoC o
+    lab reproducible cuando aplica.
+  order: 4
+  filters: [producto, impacto]
+
+- slug: varios
+  collection: varios
+  label: Varios
+  icon: wrench
+  accent_class: acc-ok
+  accent: "#69efa3"
+  kicker: tutoriales, comparativas y tooling
+  desc: >-
+    Cajón de sastre: tutoriales y guías sueltas sobre un concepto o herramienta,
+    comparativas y notas que no encajan en otra categoría.
+  order: 6
+  filters: [tema]
+
+- slug: papers
+  collection: papers
+  label: Papers
+  icon: paper
+  accent_class: acc-paper
+  accent: "#f5b342"
+  kicker: análisis de papers técnicos
+  desc: >-
+    Lectura y desmontaje de papers de seguridad: qué encontraron, cómo lo
+    hicieron y por qué importa — con el vídeo y el paper original.
+  order: 5

@@ -1,0 +1,83 @@
+---
+layout: default
+---
+{%- assign cats = site.data.categorias | sort: "order" -%}
+
+{%- comment -%} ══ HERO ══ {%- endcomment -%}
+<section class="lp-hero">
+  <img class="lp-hero__logo" src="{{ '/assets/img/logo.webp' | relative_url }}" alt="Logo de DROVOLEAKS" width="150" height="150" fetchpriority="high" decoding="async">
+  <p class="eyebrow">reversing · pwn · malware</p>
+  <h1 class="h1">DROVOLEAKS</h1>
+  <p class="lead">El reversing no es difícil, es que <b>nadie te dio una estructura</b>.</p>
+  <p class="body">Todo mi contenido de YouTube, ordenado como a mí me habría gustado encontrarlo: cada reto con su writeup, su material extra y sus enlaces, para que lo repliques a tu ritmo.</p>
+  <div class="ctas">
+    <a class="btn primary cta-start" href="{{ '/empieza/' | relative_url }}">Empieza aquí</a>
+  </div>
+</section>
+
+{%- comment -%} ══ SOBRE DROVOH4K ══ {%- endcomment -%}
+<section class="lp-section">
+  <p class="sec-eye">quién está detrás</p>
+  <h2 class="h2">Hola, soy <span style="color:var(--inv)">Llorenç</span> <span style="color:var(--muted);font-weight:500;font-size:.8em">(aka. drovoh4k)</span></h2>
+
+  <div class="lp-about">
+    <div class="lp-persona">
+      <div class="lp-persona__photo-wrap">
+        <img class="lp-persona__photo" src="{{ '/assets/img/drovoh4k.jpg' | relative_url }}" alt="Foto de Llorenç (drovoh4k)" width="400" height="400" loading="lazy">
+      </div>
+      <a class="lp-persona__li" href="https://www.linkedin.com/in/llorenc-garcia-merino/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"></path></svg>
+        Conecta en LinkedIn
+      </a>
+    </div>
+
+    <div class="lp-about__text">
+      <p class="body">No soy ningún gurú con años de experiencia a la espalda. Soy alguien como tú, solo que <b>un poco más adelante en el camino</b>: intento aprender todo lo que puedo y explicártelo de la forma más simple que encuentro.</p>
+      <p class="body">Sin recetas que memorizar: material ordenado y paso a paso, para que lo <b>entiendas</b> y lo repliques tú mismo. En el fondo, es lo que a mí me habría gustado tener al empezar.</p>
+      <ul class="lp-highlights">
+        <li>
+          <svg class="catic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-flag"></use></svg>
+          <div><b>Aprende resolviendo.</b> Writeups de crackmes y CTFs paso a paso, para que los rehagas tú mismo.</div>
+        </li>
+        <li>
+          <svg class="catic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-cap"></use></svg>
+          <div><b>La ruta que te faltaba.</b> Cursos por módulos que te llevan de cero con estructura, sin saltarte pasos.</div>
+        </li>
+        <li>
+          <svg class="catic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-bug"></use></svg>
+          <div><b>Casos reales.</b> CVEs y papers analizados a fondo: qué pasó, cómo, y qué puedes aprender.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{%- comment -%} ══ CATÁLOGO ══ {%- endcomment -%}
+<section class="lp-section">
+  <p class="sec-eye">el catálogo</p>
+  <h2 class="h2">Qué vas a encontrar</h2>
+
+  <div class="cardgrid lp-cats">
+    {%- for cat in cats -%}
+      {%- assign col = site[cat.collection] | where_exp: "i", "i.draft != true" -%}
+      {%- if cat.count_by -%}
+        {%- assign n = col | map: cat.count_by | uniq | compact | size -%}
+      {%- else -%}
+        {%- assign n = col | size -%}
+      {%- endif -%}
+      <a class="tcard {{ cat.accent_class }}" href="{{ '/' | append: cat.slug | append: '/' | relative_url }}">
+        <div class="tk">{{ cat.kicker }}</div>
+        <div class="tt">
+          <svg class="catic ttic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-{{ cat.icon }}"></use></svg>
+          {{ cat.label }}
+        </div>
+        <p class="td">{{ cat.desc }}</p>
+        <div class="tf">
+          <span class="n">{{ n }} {% if cat.slug == 'cursos' %}{% if n == 1 %}curso{% else %}cursos{% endif %}{% else %}{% if n == 1 %}entrada{% else %}entradas{% endif %}{% endif %}</span>
+          <span class="go">Ver →</span>
+        </div>
+      </a>
+    {%- endfor -%}
+  </div>
+</section>
+

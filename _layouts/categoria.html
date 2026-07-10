@@ -1,0 +1,195 @@
+---
+layout: default
+---
+{%- assign cat = site.data.categorias | where: "slug", page.categoria_slug | first -%}
+{%- assign col = site[cat.collection] | where_exp: "i", "i.draft != true" -%}
+
+<div class="idxhead {{ cat.accent_class }}">
+  <div class="idxchip">
+    <svg class="catic idxic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-{{ cat.icon }}"></use></svg>
+  </div>
+  <div>
+    <p class="sec-eye">{{ cat.kicker }}</p>
+    <h1 class="h2 {{ cat.accent_class }}"><span class="ac">{{ cat.label }}</span></h1>
+  </div>
+</div>
+<p class="body">{{ cat.desc }}</p>
+
+{%- if cat.slug == "cursos" -%}
+  {%- comment -%} Índice de cursos: tarjetas que llevan a la landing de cada curso {%- endcomment -%}
+  {%- assign landings = site.pages | where: "curso_landing", true | sort: "orden" -%}
+  <div class="cardgrid" style="margin-top:2rem">
+    {%- for course in landings -%}
+      {%- assign nclases = col | where: "curso_slug", course.curso_slug | size -%}
+      <a class="tcard acc-xor" href="{{ course.url | relative_url }}">
+        <div class="tk">curso · {{ course.nivel | default: "principiante" }}</div>
+        <div class="tt">
+          <svg class="catic ttic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-cap"></use></svg>
+          {{ course.curso }}
+        </div>
+        <p class="td">{{ course.descripcion }}</p>
+        <div class="tf">
+          <span class="n">{{ nclases }} {% if nclases == 1 %}clase{% else %}clases{% endif %}</span>
+          <span class="go">Ver curso →</span>
+        </div>
+      </a>
+    {%- endfor -%}
+  </div>
+  {%- if landings.size == 0 -%}
+  <div class="empty" style="margin-top:2rem">Aún no hay cursos publicados. Mientras tanto, <a href="{{ '/empieza/' | relative_url }}">empieza por la ruta</a>.</div>
+  {%- endif -%}
+
+{%- else -%}
+  {%- comment -%} Fuse.js + search.js solo aquí (páginas con buscador), no en el resto del sitio. {%- endcomment -%}
+  <script src="{{ '/assets/vendor/fuse.min.js' | relative_url }}" defer></script>
+  <script src="{{ '/assets/js/search.js' | relative_url }}" defer></script>
+  {%- comment -%} ── Buscador + chips + listado ──────────────────────────────── {%- endcomment -%}
+  <div class="searchbar">
+    <span class="si" aria-hidden="true">⌕</span>
+    <input class="sinput" id="catsearch" type="search" placeholder="Buscar por nombre o etiqueta…" aria-label="Buscar en {{ cat.label }}" autocomplete="off">
+  </div>
+
+  {%- if cat.filters and cat.filters.size > 0 -%}
+  <div class="filterpanel {{ cat.accent_class }}" id="filterpanel" role="group" aria-label="Filtros">
+    <div class="filterpanel__head">
+      <button class="filterpanel__toggle" id="filtertoggle" type="button" aria-expanded="true" aria-controls="filtergroups">
+        <svg class="fp-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18l-7 8v5l-4 2v-7z"></path></svg>
+        <span>filtrar</span>
+        <svg class="fp-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+      </button>
+      <button class="filterreset" id="filterreset" type="button" hidden>limpiar <span aria-hidden="true">✕</span></button>
+    </div>
+    <div class="filtergroups" id="filtergroups">
+      {%- for field in cat.filters -%}
+        {%- assign vals = col | map: field | compact | uniq -%}
+        {%- if field == "dificultad" -%}
+          {%- comment -%} Dificultad en orden LÓGICO (no alfabético): de menor a mayor. {%- endcomment -%}
+          {%- assign _canon = "Muy Fácil,Fácil,Media,Difícil,Muy Difícil" | split: "," -%}
+          {%- assign _ordered = "" -%}
+          {%- for d in _canon -%}{%- if vals contains d -%}{%- assign _ordered = _ordered | append: d | append: "|" -%}{%- endif -%}{%- endfor -%}
+          {%- assign vals = _ordered | split: "|" -%}
+        {%- else -%}
+          {%- assign vals = vals | sort -%}
+        {%- endif -%}
+        {%- if vals.size > 0 -%}
+        <div class="fgroup">
+          <span class="filterlabel">{{ field }}</span>
+          <div class="fchips">
+            {%- for v in vals -%}
+              {%- if v != "" and v != nil -%}
+              {%- assign fclass = "" -%}
+              {%- if field == "categoria" -%}{%- assign fclass = v | slugify | prepend: "cat-" -%}
+              {%- elsif field == "dificultad" -%}
+                {%- assign vl = v | downcase -%}
+                {%- if vl contains "dif" -%}{%- assign fclass = "fdif-dificil" -%}{%- elsif vl contains "fácil" or vl contains "facil" -%}{%- assign fclass = "fdif-facil" -%}{%- elsif vl contains "media" -%}{%- assign fclass = "fdif-media" -%}{%- endif -%}
+              {%- endif -%}
+              <button class="fchip {{ fclass }}" type="button" data-group="{{ field }}" data-value="{{ v | downcase }}" aria-pressed="false">{{ v }}</button>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+  <script>
+    /* Filtros: por defecto ABIERTO en escritorio, PLEGADO en móvil. Se fija aquí,
+       antes de pintar, para no provocar un salto; el toggle vive en app.js. */
+    (function () { try {
+      if (window.matchMedia && window.matchMedia('(max-width:760px)').matches) {
+        var p = document.getElementById('filterpanel');
+        var t = document.getElementById('filtertoggle');
+        if (p) p.classList.add('is-collapsed');
+        if (t) t.setAttribute('aria-expanded', 'false');
+      }
+    } catch (e) {} })();
+  </script>
+  {%- endif -%}
+
+  <div class="resultcount" id="resultcount" role="status" aria-live="polite">{{ col | size }} {% if col.size == 1 %}entrada{% else %}entradas{% endif %}</div>
+
+  <div id="catindex">
+  {%- if cat.slug == "writeups" -%}
+    {%- comment -%} Agrupación: CrackMes / CTFs (por evento). Orden: fecha desc (nuevo→viejo). {%- endcomment -%}
+    {%- assign crackmes = col | where: "subtipo", "crackme" | sort: "date" | reverse -%}
+    {%- assign ctfs = col | where: "subtipo", "ctf" | sort: "date" | reverse -%}
+
+    {%- if crackmes.size > 0 -%}
+    <section class="wsec acc-fwd">
+      <div class="wsechead">
+        <h3 class="wsectitle">CrackMes</h3>
+        <span class="wsecsub">retos de plataformas de reversing</span>
+        <span class="wseccount">{{ crackmes.size }}</span>
+      </div>
+      <div class="igrid">
+        {%- for it in crackmes -%}{% include item-card.html item=it cat=cat %}{%- endfor -%}
+      </div>
+    </section>
+    {%- endif -%}
+
+    {%- if ctfs.size > 0 -%}
+    <section class="wsec acc-fwd">
+      <div class="wsechead">
+        <h3 class="wsectitle">CTFs</h3>
+        <span class="wsecsub">retos de competiciones</span>
+        <span class="wseccount">{{ ctfs.size }}</span>
+      </div>
+      {%- comment -%} Orden de eventos: manual por 'evento_orden' asc (menor = primero). Dentro de cada evento se mantiene fecha desc (evitems se saca de 'ctfs'). {%- endcomment -%}
+      {%- assign ctfs_by_ev = ctfs | sort: "evento_orden" -%}
+      {%- assign eventos = ctfs_by_ev | map: "evento" | compact | uniq -%}
+      {%- for ev in eventos -%}
+        {%- assign evitems = ctfs | where: "evento", ev -%}
+        <div class="wsubgroup">
+          <div class="wsubhead">{{ ev }}</div>
+          <div class="igrid">
+            {%- for it in evitems -%}{% include item-card.html item=it cat=cat %}{%- endfor -%}
+          </div>
+        </div>
+      {%- endfor -%}
+      {%- comment -%} Red de seguridad: un CTF sin `evento` no cae en ningún grupo del bucle
+         anterior (compact descarta el nil). Lo recogemos aquí para que no desaparezca. {%- endcomment -%}
+      {%- assign ctfs_sin_ev = ctfs | where_exp: "i", "i.evento == nil" -%}
+      {%- if ctfs_sin_ev.size > 0 -%}
+      <div class="wsubgroup">
+        <div class="wsubhead">Otros</div>
+        <div class="igrid">
+          {%- for it in ctfs_sin_ev -%}{% include item-card.html item=it cat=cat %}{%- endfor -%}
+        </div>
+      </div>
+      {%- endif -%}
+    </section>
+    {%- endif -%}
+
+    {%- comment -%} Red de seguridad: writeups sin `subtipo` (o con uno distinto de
+       crackme/ctf) no encajan en ninguna sección y desaparecerían del índice. {%- endcomment -%}
+    {%- assign otros = col | where_exp: "i", "i.subtipo != 'crackme'" | where_exp: "i", "i.subtipo != 'ctf'" | sort: "date" | reverse -%}
+    {%- if otros.size > 0 -%}
+    <section class="wsec acc-fwd">
+      <div class="wsechead">
+        <h3 class="wsectitle">Otros</h3>
+        <span class="wsecsub">writeups sin clasificar</span>
+        <span class="wseccount">{{ otros.size }}</span>
+      </div>
+      <div class="igrid">
+        {%- for it in otros -%}{% include item-card.html item=it cat=cat %}{%- endfor -%}
+      </div>
+    </section>
+    {%- endif -%}
+
+  {%- else -%}
+    {%- comment -%} Listado plano (masterclass, tutoriales, vulnerabilidades, varios). Orden: fecha desc. {%- endcomment -%}
+    {%- assign items = col | sort: "date" | reverse -%}
+    <div class="igrid">
+      {%- for it in items -%}{% include item-card.html item=it cat=cat %}{%- endfor -%}
+    </div>
+  {%- endif -%}
+
+    {%- comment -%} Estado vacío en servidor: si la categoría no tiene NINGUNA entrada
+       publicada, mostramos un mensaje útil en vez de un hueco en blanco (search.js
+       hace `return` si no hay tarjetas y nunca enseñaría #noresults). {%- endcomment -%}
+    {%- if col.size == 0 -%}
+    <div class="empty">Aún no hay entradas publicadas aquí. Mientras tanto, <a href="{{ '/empieza/' | relative_url }}">empieza por la ruta</a>.</div>
+    {%- endif -%}
+    <div class="empty" id="noresults" role="status" aria-live="polite" style="display:none">Sin resultados. Prueba otro término o quita los filtros.</div>
+  </div>
+{%- endif -%}

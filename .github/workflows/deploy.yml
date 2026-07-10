@@ -1,0 +1,89 @@
+name: CI · validar y desplegar
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un único deploy en curso; no cancela el que ya está publicando.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # ── Puerta de calidad: corre SIEMPRE (también en pull_request). No despliega. ──
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Front matter en orden canónico
+        run: python3 tools/order_frontmatter.py --check
+
+      - name: Vocabulario, permalinks y placeholders
+        run: python3 tools/validate_content.py
+
+      - name: Build de comprobación (incluye borradores, para validarlos)
+        run: bundle exec jekyll build --destination ./_site_check
+
+      - name: Enlaces internos e imágenes (html-proofer)
+        # No bloqueante de momento: al confirmar que pasa limpio en tu repo,
+        # quita 'continue-on-error' para convertirlo en puerta dura.
+        continue-on-error: true
+        run: |
+          gem install html-proofer -v '~> 5.0'
+          htmlproofer ./_site_check --disable-external --allow-hash-href --checks Links,Images --ignore-missing-alt --ignore-files "/templates/"
+
+  build:
+    needs: validate
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true   # resuelve e instala gems (sin lock commiteado)
+
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v6
+        with:
+          enablement: true   # activa Pages (source=Actions) en el primer run
+
+      - name: Build with Jekyll
+        # base_path se resuelve solo: "/<repo>" en project page, "" en dominio raíz.
+        run: bundle exec jekyll build --destination ./_site --baseurl "${{ steps.pages.outputs.base_path }}"
+        env:
+          JEKYLL_ENV: production
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

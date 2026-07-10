@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="{{ site.lang | default: 'es' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {%- comment -%} Endurecimiento: acota los orígenes de red. 'unsafe-inline' es
+     necesario en un sitio estático (scripts/estilos inline, sin nonces). Se permiten
+     los terceros REALES: youtube-nocookie/ytimg (vídeo) y esm.sh/jsdelivr (visor
+     de diagramas Excalidraw, bajo demanda). {%- endcomment -%}
+  {%- comment -%} Si giscus está configurado, se añade su origen a la CSP automáticamente. {%- endcomment -%}
+  {%- assign _giscus = "" -%}{%- if site.giscus and site.giscus.repo -%}{%- assign _giscus = " https://giscus.app" -%}{%- endif -%}
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://i.ytimg.com https://*.ytimg.com; media-src 'self'; frame-src 'self' https://www.youtube-nocookie.com{{ _giscus }}; worker-src 'self' blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://esm.sh https://cdn.jsdelivr.net{{ _giscus }}; style-src 'self' 'unsafe-inline' https://esm.sh https://cdn.jsdelivr.net; font-src 'self' https://esm.sh https://cdn.jsdelivr.net; connect-src 'self' https://esm.sh https://cdn.jsdelivr.net{{ _giscus }}">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>{% if page.url == '/' %}{{ site.title }}{% elsif page.title %}{{ page.title | strip_html }} · {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+
+  {%- comment -%} SEO social + JSON-LD (description, canonical, Open Graph, Twitter, datos estructurados) {%- endcomment -%}
+  {% include head-seo.html %}
+
+  <!-- Fuentes auto-alojadas (sin terceros): sin fuga de IP a Google ni render-blocking.
+       Se precargan las 2 críticas above-the-fold (cuerpo + titulares). -->
+  <link rel="preload" as="font" type="font/woff2" href="{{ '/assets/fonts/inter-400-latin.woff2' | relative_url }}" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="{{ '/assets/fonts/chakra-petch-600-latin.woff2' | relative_url }}" crossorigin>
+  {%- comment -%} Entradas con vídeo: la miniatura de la fachada (i.ytimg.com) suele ser el LCP;
+     abre el socket pronto. SIN crossorigin: la imagen no va en modo CORS. {%- endcomment -%}
+  {%- if page.video %}
+  <link rel="preconnect" href="https://i.ytimg.com">
+  {%- endif %}
+  <link rel="stylesheet" href="{{ '/assets/css/fonts.css' | relative_url }}">
+
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  {%- comment -%} Único autodiscovery de feed: el Atom agregado propio /feed.xml (las 6
+     colecciones). Se omite a propósito el tag feed_meta de jekyll-feed, que anunciaría
+     además el feed base (/feed.posts.xml), vacío en este sitio (no usa _posts). {%- endcomment -%}
+  <link rel="alternate" type="application/atom+xml" title="{{ site.title }}" href="{{ '/feed.xml' | relative_url }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ '/assets/img/favicon-32.png' | relative_url }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ '/assets/img/apple-touch-180.png' | relative_url }}">
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+  {% include icons.html %}
+  <div class="app" id="app">
+    {%- comment -%} Tema inicial sin FOUC: primer hijo de #app, corre durante el parseo.
+       Por defecto claro; solo se aplica oscuro si el usuario lo eligió antes. {%- endcomment -%}
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('drovo-theme');   // 'light' | 'dark' | null
+          if (t !== 'dark') document.getElementById('app').classList.add('light');
+          if (localStorage.getItem('drovo-sidebar') === 'collapsed') document.getElementById('app').classList.add('sidecollapsed');
+        } catch (e) {}
+      })();
+    </script>
+
+    {% include sidebar.html %}
+
+    <main class="main">
+      {% include topbar.html %}
+      <div id="main" tabindex="-1" class="inner {% if page.wide %}wide{% endif %}">
+        {{ content }}
+      </div>
+      <footer class="footer">
+        <span>© {{ site.time | date: '%Y' }} DROVOLEAKS</span>
+        <span class="fsep">·</span>
+        <span>Contenido educativo. Respeta las normas y licencias de cada plataforma.</span>
+        <span class="fsep">·</span>
+        <a href="{{ '/legal/' | relative_url }}">Aviso legal</a>
+      </footer>
+    </main>
+
+    <div class="navscrim" id="navscrim"></div>
+
+    {%- comment -%} Modal de aviso al descargar un challenge (mirror del original) {%- endcomment -%}
+    <div class="modal" id="dlmodal" hidden>
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="dlmodal-title">
+      <div class="modal__ic" aria-hidden="true">⬇</div>
+      <h3 class="modal__title" id="dlmodal-title">Vas a descargar un fichero</h3>
+      <p class="modal__file mono" id="dlmodal-file"></p>
+      <p class="modal__desc">Es una <b>copia local (mirror)</b> del reto original, alojada aquí para que el material no dependa de terceros. Descárgalo bajo tu responsabilidad y respeta la licencia de la fuente. Ver la <a href="{{ '/legal/' | relative_url }}">política de mirrors y retirada</a>.</p>
+      <div class="modal__pass" id="dlmodal-pass" hidden>
+        <span class="modal__passk">🔑 contraseña del .zip</span>
+        <code id="dlmodal-passv"></code>
+        <button class="modal__copy" id="dlmodal-passcopy" type="button">copiar</button>
+      </div>
+      <div class="modal__hash" id="dlmodal-hash" hidden>
+        <span class="modal__passk">🔒 sha256 (integridad)</span>
+        <code id="dlmodal-hashv"></code>
+        <button class="modal__copy" id="dlmodal-hashcopy" type="button">copiar</button>
+      </div>
+      <div class="modal__actions">
+        <button class="btn" type="button" data-close>Cancelar</button>
+        <a class="btn primary" id="dlmodal-go" href="#" download>Descargar ↓</a>
+      </div>
+    </div>
+    </div>
+
+    {%- comment -%} Visor de código: abre scripts/ficheros de texto en un modal (fetch) {%- endcomment -%}
+    <div class="codemodal" id="codemodal" hidden>
+      <div class="codemodal__backdrop" data-close></div>
+      <div class="codemodal__box" role="dialog" aria-modal="true" aria-labelledby="codemodal-name">
+        <div class="codemodal__head">
+          <span class="codemodal__name" id="codemodal-name"></span>
+          <div class="codemodal__actions">
+            <a class="codemodal__btn" id="codemodal-dl" href="#" download aria-label="Descargar" title="Descargar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"></path></svg>
+              <span class="codemodal__btntxt">Descargar</span>
+            </a>
+            <button class="codemodal__btn codemodal__close" type="button" data-close aria-label="Cerrar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="codemodal__body">
+          <div class="cm-code" id="codemodal-code"></div>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Visor de medios: imágenes, PDF y excalidraw (modo lectura), mismo estilo que el visor de código {%- endcomment -%}
+    <div class="codemodal mediamodal" id="mediamodal" hidden>
+      <div class="codemodal__backdrop" data-close></div>
+      <div class="codemodal__box" role="dialog" aria-modal="true" aria-labelledby="mediamodal-name">
+        <div class="codemodal__head">
+          <span class="codemodal__name" id="mediamodal-name"></span>
+          <div class="codemodal__actions">
+            <a class="codemodal__btn" id="mediamodal-dl" href="#" download aria-label="Descargar" title="Descargar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"></path></svg>
+              <span class="codemodal__btntxt">Descargar</span>
+            </a>
+            <button class="codemodal__btn codemodal__close" type="button" data-close aria-label="Cerrar">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div class="codemodal__body mediamodal__body" id="mediamodal-body"></div>
+      </div>
+    </div>
+
+  </div>
+
+  {%- comment -%} Fuse.js y search.js solo se cargan en las páginas de categoría
+     (categoria.html), que es donde está el buscador/filtros; el resto no los descarga. {%- endcomment -%}
+  <script src="{{ '/assets/js/app.js' | relative_url }}" defer></script>
+</body>
+</html>

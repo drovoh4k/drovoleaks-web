@@ -1,0 +1,38 @@
+{%- comment -%} Sidebar: logo + navegación por categorías con contadores (derivados
+del front matter) + tarjeta de Discord. {%- endcomment -%}
+<aside class="side" id="side" aria-label="Navegación principal">
+  <a class="logolink" href="{{ '/' | relative_url }}">
+    <img class="logo-mark" src="{{ '/assets/img/logo.webp' | relative_url }}" alt="" width="40" height="40" decoding="async">
+    <span class="logo-text">
+      <span class="logo">DROVOLEAKS</span>
+      <span class="logo-sub">// {{ site.tagline }}</span>
+    </span>
+  </a>
+
+  <nav class="navwrap" aria-label="Catálogo">
+  <div class="navlabel">Catálogo</div>
+  {%- assign cats = site.data.categorias | sort: "order" -%}
+  {%- for cat in cats -%}
+    {%- assign col = site[cat.collection] | where_exp: "i", "i.draft != true" -%}
+    {%- if cat.count_by -%}
+      {%- assign n = col | map: cat.count_by | uniq | compact | size -%}
+    {%- else -%}
+      {%- assign n = col | size -%}
+    {%- endif -%}
+    {%- assign onclass = "" -%}
+    {%- assign iscur = false -%}
+    {%- if page.categoria_slug == cat.slug %}{% assign onclass = "on" %}{% assign iscur = true %}{% endif -%}
+    <a class="navlink {{ cat.accent_class }} {{ onclass }}" href="{{ '/' | append: cat.slug | append: '/' | relative_url }}"{% if iscur %} aria-current="page"{% endif %}>
+      <svg class="catic ncic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-{{ cat.icon }}"></use></svg>
+      <span>{{ cat.label }}</span>
+      <span class="ct">{{ n }}</span>
+    </a>
+  {%- endfor -%}
+  </nav>
+
+  <a class="discord" href="{{ site.author.discord }}" target="_blank" rel="noopener">
+    <div class="dk">comunidad</div>
+    <div class="dt">Únete al Discord ↗</div>
+    <div class="dm">Dudas, retos y writeups en directo.</div>
+  </a>
+</aside>

@@ -1,0 +1,221 @@
+---
+layout: default
+---
+{%- assign cat = site.data.categorias | where: "slug", page.categoria_slug | first -%}
+{%- assign crumb_current = page.title -%}
+{%- if page.categoria_slug == "cursos" and page.curso_slug -%}
+  {%- assign crumb_parent_label = page.curso -%}
+  {%- assign crumb_parent_url = '/cursos/' | append: page.curso_slug | append: '/' -%}
+{%- endif -%}
+
+{%- comment -%} ── ID de vídeo de YouTube (lógica en _includes/video-id.html) ── {%- endcomment -%}
+{%- capture vid_id -%}{%- include video-id.html url=page.video -%}{%- endcapture -%}
+{%- assign vid_id = vid_id | strip -%}
+
+<div class="itemwrap {{ cat.accent_class }}">
+  <p class="sec-eye">{{ cat.kicker }}</p>
+  <h1 class="h2">{{ page.title }}{% if page.draft %}<span class="draftflag">borrador</span>{% endif %}</h1>
+  <div class="itemmeta">
+    <span class="typchip">
+      <svg class="catic tcic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-{{ cat.icon }}"></use></svg>
+      {{ cat.label | truncate: 20 }}
+    </span>
+    {%- if page.categoria %}<span class="metab">{{ page.categoria }}</span><span class="metab" aria-hidden="true">·</span>{% endif -%}
+    <span class="metab {% if page.date_placeholder %}ph{% endif %}">{% if page.date_placeholder %}fecha por revisar{% else %}{% include fecha.html date=page.date long=true %}{% endif %}</span>
+    {%- if page.duracion %}<span class="metab" aria-hidden="true">·</span><span class="metab">{{ page.duracion }}</span>{% endif -%}
+  </div>
+
+  {%- if page.tags and page.tags.size > 0 -%}
+  <div class="itemtags">
+    {%- for t in page.tags -%}
+      {%- unless t == page.categoria -%}
+      {%- assign _ts = t | slugify -%}
+      {%- if site.data.tag_slugs contains _ts -%}<a class="tag" href="{{ '/tags/' | append: _ts | append: '/' | relative_url }}">{{ t }}</a>
+      {%- else -%}<span class="tag">{{ t }}</span>{%- endif -%}
+      {%- endunless -%}
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+
+  <div class="entry">
+    <div class="entry__main">
+      {%- assign cta_what = "este reto" -%}
+      {%- case page.categoria_slug -%}
+        {%- when "cursos" -%}{% assign cta_what = "esta clase" %}
+        {%- when "masterclass" -%}{% assign cta_what = "esta masterclass" %}
+        {%- when "vulnerabilidades" -%}{% assign cta_what = "este análisis" %}
+        {%- when "varios" -%}{% assign cta_what = "esto" %}
+        {%- when "papers" -%}{% assign cta_what = "este paper" %}
+      {%- endcase -%}
+      {%- capture cta -%}
+      <div class="ctapanel">
+        <div class="cl">
+          <div class="ck2">comunidad drovohub</div>
+          <div class="ch">¿Dudas con {{ cta_what }}?</div>
+          <p class="cp">Pásate por el Discord y te ayudamos con lo que haga falta, en comunidad.</p>
+        </div>
+        <a class="btn btn-discord-soft" href="{{ site.author.discord }}" target="_blank" rel="noopener">
+          <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="#7b86f5" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18.3 18.3 0 0 0-6.3 0L8.6 3a19.8 19.8 0 0 0-5 1.4C.4 9.1-.3 13.6 0 18.1a19.9 19.9 0 0 0 6 3l.5-.7c-.5-.2-1-.4-1.5-.7l.4-.3a14.2 14.2 0 0 0 12.2 0l.4.3c-.5.3-1 .5-1.5.7l.5.7a19.9 19.9 0 0 0 6-3c.4-5.2-.6-9.7-3.2-13.7ZM8 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm8 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"></path></svg>
+          Entrar al Discord ↗
+        </a>
+      </div>
+      {%- endcapture -%}
+
+      {%- comment -%} Resumen como intro, antes del vídeo (sin el título "Resumen"). {%- endcomment -%}
+      {%- if page.resumen and page.resumen != "" -%}
+        {%- assign _r = page.resumen | strip -%}
+        {%- if _r == "RELLENAR" -%}
+        <div class="entry__todo" title="Añade el resumen en el front matter (resumen:)">RELLENAR</div>
+        {%- else -%}
+        <div class="prose entry__intro" id="resumen">{{ page.resumen | markdownify }}</div>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- if vid_id != "" -%}
+      <div class="video" id="video">
+        <button class="ytfacade" type="button" data-id="{{ vid_id }}" data-title="{{ page.title | escape }}"
+                style="background-image:url('https://i.ytimg.com/vi/{{ vid_id }}/hqdefault.jpg')"
+                aria-label="Reproducir vídeo: {{ page.title | escape }}">
+          <span class="ytfacade__play" aria-hidden="true">
+            <svg viewBox="0 0 68 48"><path class="yt-body" d="M66.5 7.7c-.8-2.9-3-5.2-5.9-6C55.4.3 34 .3 34 .3S12.6.3 7.4 1.7C4.5 2.5 2.3 4.8 1.5 7.7.1 12.9.1 24 .1 24s0 11.1 1.4 16.3c.8 2.9 3 5.2 5.9 6C12.6 47.7 34 47.7 34 47.7s21.4 0 26.6-1.4c2.9-.8 5.1-3.1 5.9-6C67.9 35.1 67.9 24 67.9 24s0-11.1-1.4-16.3z"></path><path fill="#fff" d="M27 34.5V13.5L45 24z"></path></svg>
+          </span>
+        </button>
+      </div>
+      {%- endif -%}
+
+      {%- comment -%} El CTA de Discord va justo debajo del vídeo en todo el contenido. {%- endcomment -%}
+      {{ cta }}
+
+      {%- comment -%} La sección Recursos la controla el layout: solo si la entrada
+         tiene cuerpo. Antes iba como "## 📦 Recursos" dentro del markdown. {%- endcomment -%}
+      {%- assign _body = content | strip -%}
+      {%- if _body != "" -%}
+      <section class="ressec" id="recursos">
+        <h3 class="ressec__title"><span aria-hidden="true">📦</span> Recursos</h3>
+        <div class="prose" id="recursos-body">
+          {{ content }}
+        </div>
+      </section>
+      {%- endif -%}
+
+      {%- comment -%} ── Navegación anterior/siguiente entre clases del mismo curso ── {%- endcomment -%}
+      {%- if page.categoria_slug == "cursos" and page.curso_slug -%}
+        {%- assign _sib = site.cursos | where: "curso_slug", page.curso_slug | where_exp: "i", "i.draft != true" | sort: "orden" -%}
+        {%- assign _prev = nil -%}{%- assign _next = nil -%}
+        {%- for c in _sib -%}
+          {%- if c.url == page.url -%}
+            {%- unless forloop.first -%}{%- assign _pi = forloop.index0 | minus: 1 -%}{%- assign _prev = _sib[_pi] -%}{%- endunless -%}
+            {%- unless forloop.last -%}{%- assign _ni = forloop.index0 | plus: 1 -%}{%- assign _next = _sib[_ni] -%}{%- endunless -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if _prev or _next -%}
+        <nav class="prevnext acc-xor" aria-label="Navegación del curso">
+          {%- if _prev -%}
+          <a class="pn pn--prev" href="{{ _prev.url | relative_url }}" rel="prev">
+            <span class="pn__dir"><span aria-hidden="true">←</span> Anterior</span>
+            <span class="pn__t">{{ _prev.title }}</span>
+          </a>
+          {%- else -%}<span class="pn pn--empty" aria-hidden="true"></span>{%- endif -%}
+          <a class="pn pn--index" href="{{ '/cursos/' | append: page.curso_slug | append: '/' | relative_url }}" title="Índice del curso">
+            <svg class="catic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-cap"></use></svg>
+          </a>
+          {%- if _next -%}
+          <a class="pn pn--next" href="{{ _next.url | relative_url }}" rel="next">
+            <span class="pn__dir">Siguiente <span aria-hidden="true">→</span></span>
+            <span class="pn__t">{{ _next.title }}</span>
+          </a>
+          {%- else -%}<span class="pn pn--empty" aria-hidden="true"></span>{%- endif -%}
+        </nav>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ── Panel lateral de metadatos + recursos ──────────────────── {%- endcomment -%}
+    <aside class="entry__aside {{ cat.accent_class }}" aria-label="Metadatos y recursos">
+      <div class="metacard">
+        <h4>Metadatos</h4>
+        {%- if page.categoria -%}<div class="metarow"><span class="metak">categoría</span><span class="metav mv-blue">{{ page.categoria }}</span></div>{%- endif -%}
+        {%- if page.dificultad -%}
+          {%- assign dclass = "mv-purple" -%}
+          {%- assign dl = page.dificultad | downcase -%}
+          {%- if dl contains "fácil" or dl contains "facil" -%}{% assign dclass = "mv-green" %}{%- elsif dl contains "media" -%}{% assign dclass = "mv-amber" %}{%- elsif dl contains "difícil" or dl contains "dificil" -%}{% assign dclass = "mv-red" %}{%- endif -%}
+          <div class="metarow"><span class="metak">dificultad</span><span class="metav {{ dclass }}">{{ page.dificultad }}</span></div>
+        {%- endif -%}
+        {%- if page.subtipo -%}<div class="metarow"><span class="metak">tipo</span><span class="metav">{{ page.subtipo }}</span></div>{%- endif -%}
+        {%- if page.fuente -%}<div class="metarow"><span class="metak">fuente</span><span class="metav">{{ page.fuente }}</span></div>{%- endif -%}
+        {%- if page.evento and page.evento != page.fuente -%}<div class="metarow"><span class="metak">evento</span><span class="metav">{{ page.evento }}</span></div>{%- endif -%}
+        {%- if page.arquitectura -%}<div class="metarow"><span class="metak">arquitectura</span><span class="metav mv-purple">{{ page.arquitectura }}</span></div>{%- endif -%}
+        {%- if page.plataforma -%}<div class="metarow"><span class="metak">plataforma</span><span class="metav mv-purple">{{ page.plataforma }}</span></div>{%- endif -%}
+        {%- if page.lenguaje -%}<div class="metarow"><span class="metak">lenguaje</span><span class="metav mv-purple">{{ page.lenguaje }}</span></div>{%- endif -%}
+        {%- if page.cve -%}<div class="metarow"><span class="metak">cve</span><span class="metav mv-blue">{{ page.cve }}</span></div>{%- endif -%}
+        {%- if page.producto -%}<div class="metarow"><span class="metak">producto</span><span class="metav mv-blue">{{ page.producto }}</span></div>{%- endif -%}
+        {%- if page.impacto -%}<div class="metarow"><span class="metak">impacto</span><span class="metav mv-red">{{ page.impacto }}</span></div>{%- endif -%}
+        {%- if page.nivel -%}<div class="metarow"><span class="metak">nivel</span><span class="metav mv-green">{{ page.nivel }}</span></div>{%- endif -%}
+        {%- if page.tema -%}<div class="metarow"><span class="metak">tema</span><span class="metav mv-blue">{{ page.tema }}</span></div>{%- endif -%}
+        {%- if page.modulo -%}<div class="metarow"><span class="metak">módulo</span><span class="metav">{{ page.modulo }}</span></div>{%- endif -%}
+        {%- if page.arxiv -%}<div class="metarow"><span class="metak">doi</span><span class="metav mv-amber">arXiv:{{ page.arxiv }}</span></div>{%- endif -%}
+      </div>
+
+      {%- comment -%} Índice del contenido: lo rellena app.js con el resumen/vídeo y
+         las subsecciones de Recursos. Queda oculto si la entrada no tiene recursos. {%- endcomment -%}
+      <nav class="metacard" id="entry-toc" aria-label="Contenido" hidden>
+        <h4>Contenido</h4>
+        <div class="toclist" id="entry-toc-list"></div>
+      </nav>
+
+      {%- comment -%} Papers: PDF local (visor dentro de la web) + enlace a arXiv.
+         Anidado (no `and`/`or` mixto): Liquid asocia por la derecha y sin paréntesis
+         la intención quedaba frágil ante cualquier edición futura. {%- endcomment -%}
+      {%- if page.categoria_slug == "papers" -%}{%- if page.pdf_local or page.arxiv -%}
+      <div class="metacard">
+        <h4>El paper</h4>
+        <div class="reslist">
+          {%- if page.pdf_local -%}
+          <a class="reslink reslink--paper js-pdf-view" href="{{ page.pdf_local }}" data-pdf="{{ page.pdf_local }}" data-name="{{ page.title | escape }}" target="_blank" rel="noopener">
+            <span class="ri" aria-hidden="true">📄</span>
+            <span class="rl">Ver paper completo<span class="respass">en un visor dentro de la web</span></span>
+            <span class="ra" aria-hidden="true">⤢</span>
+          </a>
+          {%- endif -%}
+          {%- if page.arxiv -%}
+          <a class="reslink" href="https://arxiv.org/abs/{{ page.arxiv }}" target="_blank" rel="noopener">
+            <span class="ri" aria-hidden="true">🔗</span>
+            <span class="rl">Ver en arXiv<span class="respass">página oficial</span></span>
+            <span class="ra" aria-hidden="true">↗</span>
+          </a>
+          {%- endif -%}
+        </div>
+      </div>
+      {%- endif -%}{%- endif -%}
+
+      {%- assign extra_res = "" -%}
+      {%- if page.recursos and page.recursos.size > 0 -%}
+      <div class="metacard">
+        <h4>Recursos</h4>
+        <div class="reslist">
+          {%- for r in page.recursos -%}
+            {%- if r.file -%}
+            {%- assign fname = r.file | split: "/" | last -%}
+            {%- assign fl = r.file | downcase -%}
+            {%- assign ismirror = false -%}{%- if r.pass or fl contains ".zip" -%}{%- assign ismirror = true -%}{%- endif -%}
+            <a class="reslink{% if ismirror %} js-dl-mirror{% endif %}" href="{{ r.file }}" download data-name="{{ fname | escape }}"{% if r.pass %} data-pass="{{ r.pass | escape }}"{% endif %}{% if r.sha256 %} data-sha256="{{ r.sha256 }}"{% endif %}>
+              <span class="ri" aria-hidden="true">⬇</span>
+              <span class="rl">{{ r.label }}{% if r.pass %}<span class="respass">pass: {{ r.pass }}</span>{% endif %}</span>
+              <span class="ra" aria-hidden="true">↓</span>
+            </a>
+            {%- elsif r.url -%}
+            <a class="reslink" href="{{ r.url }}" target="_blank" rel="noopener">
+              <span class="ri" aria-hidden="true">🔗</span>
+              <span class="rl">{{ r.label }}</span>
+              <span class="ra" aria-hidden="true">↗</span>
+            </a>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+      {%- endif -%}
+    </aside>
+  </div>
+
+  {% include comments.html %}
+</div>

@@ -1,0 +1,49 @@
+---
+layout: default
+---
+{%- assign crumb_current = page.curso -%}
+{%- assign classes = site.cursos | where: "curso_slug", page.curso_slug | where_exp: "i", "i.draft != true" | sort: "orden" -%}
+{%- assign modulos = classes | map: "modulo" | uniq -%}
+
+<div class="idxhead acc-xor">
+  <div class="idxchip">
+    <svg class="catic idxic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-cap"></use></svg>
+  </div>
+  <div>
+    <p class="sec-eye">curso · {{ classes.size }} {% if classes.size == 1 %}clase{% else %}clases{% endif %}</p>
+    <h1 class="h2 acc-xor"><span class="ac">{{ page.curso }}</span></h1>
+  </div>
+</div>
+
+{%- if page.objetivo -%}<div class="prose course-intro">{{ page.objetivo | markdownify }}</div>
+{%- elsif page.descripcion -%}<p class="lead" style="max-width:60ch">{{ page.descripcion }}</p>{%- endif -%}
+{%- if page.prerrequisitos -%}<div class="note note--prereq"><p class="note__h"><b>Prerrequisitos</b></p>{{ page.prerrequisitos | markdownify }}</div>{%- endif -%}
+
+{%- for mod in modulos -%}
+  {%- assign clases = classes | where: "modulo", mod -%}
+  <div class="modblock">
+    <p class="modhead">{{ mod }}</p>
+    <div class="lessons">
+      {%- for c in clases -%}
+        <a class="lessonrow" href="{{ c.url | relative_url }}">
+          <span class="lnum">{{ forloop.index0 | plus: 1 | prepend: '0' | slice: -2, 2 }}</span>
+          <div class="lc">
+            <div class="lt">{{ c.title }}</div>
+            {%- comment -%} Teaser = primera línea del propio resumen de la clase, así el
+               índice coincide con lo que se ve al abrirla (fallback: descripcion). {%- endcomment -%}
+            {%- assign _teaser = c.descripcion -%}
+            {%- if c.resumen and c.resumen != "" -%}
+              {%- assign _rt = c.resumen | markdownify | split: "</p>" | first | strip_html | strip -%}
+              {%- if _rt != "" -%}{%- assign _teaser = _rt -%}{%- endif -%}
+            {%- endif -%}
+            {%- if _teaser %}<div class="ld">{{ _teaser }}</div>{% endif -%}
+          </div>
+          {%- if c.duracion %}<span class="ldur">{{ c.duracion }}</span>{% endif -%}
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endfor -%}
+{%- if classes.size == 0 -%}
+<div class="empty" style="margin-top:2rem">Este curso aún no tiene clases publicadas. Vuelve pronto o <a href="{{ '/empieza/' | relative_url }}">empieza por la ruta</a>.</div>
+{%- endif -%}

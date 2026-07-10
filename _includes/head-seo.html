@@ -1,0 +1,156 @@
+{%- comment -%}
+  SEO social + datos estructurados. Se incluye en el <head> (default.html).
+  Emite: meta description (única por categoría), Open Graph, Twitter Card con
+  imagen (miniatura de YouTube cuando hay vídeo), y JSON-LD (Organization,
+  WebSite+SearchAction, BreadcrumbList, TechArticle/VideoObject o Course).
+  Todos los datos salen del front matter y de _data/categorias.yml.
+{%- endcomment -%}
+
+{%- assign cat = site.data.categorias | where: "slug", page.categoria_slug | first -%}
+{%- assign is_entry = false -%}{%- if page.layout == "entry" -%}{%- assign is_entry = true -%}{%- endif -%}
+{%- assign is_course = false -%}{%- if page.layout == "curso" -%}{%- assign is_course = true -%}{%- endif -%}
+
+{%- comment -%} ── Descripción: propia > (categoría/curso) > sitio ── {%- endcomment -%}
+{%- assign _desc = page.descripcion -%}
+{%- unless _desc -%}
+  {%- if page.layout == "categoria" and cat -%}{%- assign _desc = cat.desc -%}
+  {%- elsif is_course -%}{%- assign _desc = page.objetivo | default: page.descripcion -%}
+  {%- endif -%}
+{%- endunless -%}
+{%- assign _desc = _desc | default: site.description | strip_newlines | strip | truncate_words: 32 -%}
+
+{%- comment -%} ── Imagen social: miniatura de YouTube si hay vídeo; si no, imagen del sitio ── {%- endcomment -%}
+{%- capture vid_id -%}{%- include video-id.html url=page.video -%}{%- endcapture -%}
+{%- assign vid_id = vid_id | strip -%}
+{%- if vid_id != "" -%}
+  {%- comment -%} hqdefault (480x360) SIEMPRE existe; maxresdefault falla (404) en vídeos
+     sin máster >=720p, dejando la tarjeta social rota y sin thumbnail para el rich result.
+     Coherente además con el póster de la fachada en entry.html. {%- endcomment -%}
+  {%- assign _img = "https://i.ytimg.com/vi/" | append: vid_id | append: "/hqdefault.jpg" -%}
+{%- else -%}
+  {%- assign _img = "/assets/img/social-default.jpg" | absolute_url -%}
+{%- endif -%}
+
+{%- if is_entry -%}{%- assign _ogtype = "article" -%}{%- else -%}{%- assign _ogtype = "website" -%}{%- endif -%}
+
+<meta name="description" content="{{ _desc | truncate: 155 | escape }}">
+<link rel="canonical" href="{{ page.url | absolute_url }}">
+
+<meta property="og:type" content="{{ _ogtype }}">
+<meta property="og:site_name" content="{{ site.title }}">
+<meta property="og:locale" content="es_ES">
+<meta property="og:url" content="{{ page.url | absolute_url }}">
+<meta property="og:title" content="{% if page.url == '/' %}{{ site.title }}{% else %}{{ page.title | default: site.title | strip_html }}{% endif %}">
+<meta property="og:description" content="{{ _desc | escape }}">
+<meta property="og:image" content="{{ _img }}">
+{%- if is_entry %}
+<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
+<meta property="article:section" content="{{ cat.label | default: page.categoria | escape }}">
+{%- for t in page.tags -%}<meta property="article:tag" content="{{ t | escape }}">{% endfor -%}
+{%- endif %}
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% if page.url == '/' %}{{ site.title }}{% else %}{{ page.title | default: site.title | strip_html }}{% endif %}">
+<meta name="twitter:description" content="{{ _desc | escape }}">
+<meta name="twitter:image" content="{{ _img }}">
+
+{%- comment -%} ── JSON-LD: Organization ── {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": {{ site.title | jsonify }},
+  "url": {{ '/' | absolute_url | jsonify }},
+  "logo": {{ '/assets/img/logo.webp' | absolute_url | jsonify }},
+  "sameAs": [{{ site.author.youtube | jsonify }}, {{ site.author.discord | jsonify }}]
+}
+</script>
+
+{%- comment -%} ── WebSite + SearchAction (habilita la caja de búsqueda de sitelinks en la SERP). El buscador vive en las páginas de categoría; usamos /writeups/ como destino. ── {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": {{ site.title | jsonify }},
+  "url": {{ '/' | absolute_url | jsonify }},
+  "inLanguage": "es",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": { "@type": "EntryPoint", "urlTemplate": "{{ '/writeups/' | absolute_url }}?q={search_term_string}" },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+{%- comment -%} ── BreadcrumbList: Inicio > Categoría > [Curso] > Título ── {%- endcomment -%}
+{%- if cat -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": {{ '/' | absolute_url | jsonify }} },
+    { "@type": "ListItem", "position": 2, "name": {{ cat.label | jsonify }}, "item": {{ cat.slug | prepend: '/' | append: '/' | absolute_url | jsonify }} }
+    {%- if page.categoria_slug == "cursos" and page.curso_slug and is_entry %},
+    { "@type": "ListItem", "position": 3, "name": {{ page.curso | jsonify }}, "item": {{ page.curso_slug | prepend: '/cursos/' | append: '/' | absolute_url | jsonify }} },
+    { "@type": "ListItem", "position": 4, "name": {{ page.title | jsonify }}, "item": {{ page.url | absolute_url | jsonify }} }
+    {%- elsif is_entry or is_course %},
+    { "@type": "ListItem", "position": 3, "name": {{ page.title | default: page.curso | jsonify }}, "item": {{ page.url | absolute_url | jsonify }} }
+    {%- endif %}
+  ]
+}
+</script>
+{%- endif -%}
+
+{%- comment -%} ── Entrada: TechArticle (+ VideoObject si hay vídeo) ── {%- endcomment -%}
+{%- if is_entry -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": {{ page.title | jsonify }},
+  "description": {{ _desc | jsonify }},
+  "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+  "articleSection": {{ cat.label | default: page.categoria | jsonify }},
+  "image": {{ _img | jsonify }},
+  "inLanguage": "es",
+  "author": { "@type": "Person", "name": {{ site.author.name | jsonify }}, "url": {{ site.author.youtube | jsonify }} },
+  "publisher": { "@type": "Organization", "name": {{ site.title | jsonify }}, "logo": { "@type": "ImageObject", "url": {{ '/assets/img/logo.webp' | absolute_url | jsonify }} } },
+  "mainEntityOfPage": {{ page.url | absolute_url | jsonify }}
+  {%- if page.tags and page.tags.size > 0 %}, "keywords": {{ page.tags | join: ', ' | jsonify }}{% endif %}
+}
+</script>
+{%- if vid_id != "" %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": {{ page.title | jsonify }},
+  "description": {{ _desc | jsonify }},
+  "thumbnailUrl": {{ _img | jsonify }},
+  "uploadDate": {{ page.date | date_to_xmlschema | jsonify }},
+  "embedUrl": {{ vid_id | prepend: 'https://www.youtube-nocookie.com/embed/' | jsonify }}
+}
+</script>
+{%- endif -%}
+{%- endif -%}
+
+{%- comment -%} ── Landing de curso: Course ── {%- endcomment -%}
+{%- if is_course -%}
+{%- assign _clases = site.cursos | where: "curso_slug", page.curso_slug | where_exp: "i", "i.draft != true" | sort: "orden" -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Course",
+  "name": {{ page.curso | jsonify }},
+  "description": {{ _desc | jsonify }},
+  "inLanguage": "es",
+  "url": {{ page.url | absolute_url | jsonify }},
+  "provider": { "@type": "Organization", "name": {{ site.title | jsonify }}, "sameAs": {{ site.author.youtube | jsonify }} }
+  {%- if _clases.size > 0 %},
+  "hasCourseInstance": { "@type": "CourseInstance", "courseMode": "online", "courseWorkload": "PT{{ _clases.size }}H" },
+  "numberOfCredits": {{ _clases.size }}
+  {%- endif %}
+}
+</script>
+{%- endif -%}

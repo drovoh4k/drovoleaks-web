@@ -1,0 +1,8 @@
+{%- comment -%}
+Formatea una fecha con mes en español.
+  include.date  -> la fecha (Time del front matter)
+  include.long  -> si truthy, "30 ene 2026"; si no, "ene 2026"
+{%- endcomment -%}
+{%- assign _m = "ene,feb,mar,abr,may,jun,jul,ago,sep,oct,nov,dic" | split: "," -%}
+{%- assign _mi = include.date | date: "%m" | plus: 0 | minus: 1 -%}
+{%- if include.long -%}{{ include.date | date: "%-d" }} {{ _m[_mi] }} {{ include.date | date: "%Y" }}{%- else -%}{{ _m[_mi] }} {{ include.date | date: "%Y" }}{%- endif -%}

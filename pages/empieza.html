@@ -1,0 +1,124 @@
+---
+layout: default
+permalink: /empieza/
+title: Empieza aquí
+descripcion: "Una ruta de cero a operativo: por dónde empezar en reversing y cómo encadenar cursos, retos y análisis a tu ritmo."
+wide: true
+---
+{%- comment -%} Ruta de aprendizaje data-driven: cruza colecciones para materializar
+   la promesa del sitio ("darte una estructura"). Los listados salen del front matter. {%- endcomment -%}
+{%- assign cursos_landing = site.pages | where: "curso_landing", true | sort: "orden" -%}
+{%- comment -%} "ácil" cae dentro de "Fácil" y "Muy Fácil" (y no de "Difícil"/"Media"). {%- endcomment -%}
+{%- assign faciles = site.writeups | where: "subtipo", "crackme" | where_exp: "i", "i.draft != true" | where_exp: "c", "c.dificultad contains 'ácil'" | sort: "date" -%}
+{%- assign vulns = site.vulnerabilidades | where_exp: "i", "i.draft != true" | sort: "date" | reverse -%}
+{%- assign papers = site.papers | where_exp: "i", "i.draft != true" | sort: "date" | reverse -%}
+
+<div class="lp-hero" style="padding-bottom:0">
+  <p class="eyebrow">de cero a operativo</p>
+  <h1 class="h1">Empieza aquí</h1>
+  <p class="lead">El reversing no es difícil, es que <b>nadie te dio una estructura</b>. Esta es la mía: una ruta para que sepas <b>qué tocar y en qué orden</b>, sin saltarte pasos.</p>
+</div>
+
+<div class="path">
+  <section class="pathstep acc-inv">
+    <div class="pathnum">01</div>
+    <div class="pathbody">
+      <h2 class="h2">Únete a la comunidad</h2>
+      <p class="body">Esto no se aprende en solitario. Antes de arrancar: <b>suscríbete al canal</b> para no perderte nada nuevo, y pásate por el <b>Discord</b> — ahí preguntas, compartes tus avances y resuelves dudas con gente que va por el mismo camino.</p>
+      <div class="pathcta">
+        <a class="btn btn-youtube" href="{{ site.author.youtube }}" target="_blank" rel="noopener">
+          <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" fill-rule="evenodd" d="M23.5 6.5a3 3 0 0 0-2.1-2.1C19.5 3.9 12 3.9 12 3.9s-7.5 0-9.4.5A3 3 0 0 0 .5 6.5 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.5 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.5ZM9.55 15.57V8.43L15.82 12z"></path></svg>
+          Suscríbete al canal
+        </a>
+        <a class="btn btn-discord" href="{{ site.author.discord }}" target="_blank" rel="noopener">
+          <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18.3 18.3 0 0 0-6.3 0L8.6 3a19.8 19.8 0 0 0-5 1.4C.4 9.1-.3 13.6 0 18.1a19.9 19.9 0 0 0 6 3l.5-.7c-.5-.2-1-.4-1.5-.7l.4-.3a14.2 14.2 0 0 0 12.2 0l.4.3c-.5.3-1 .5-1.5.7l.5.7a19.9 19.9 0 0 0 6-3c.4-5.2-.6-9.7-3.2-13.7ZM8 15.3c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm8 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"></path></svg>
+          Únete al Discord
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="pathstep acc-xor">
+    <div class="pathnum">02</div>
+    <div class="pathbody">
+      <h2 class="h2">Fundamentos</h2>
+      <p class="body">Antes de romper nada, entiende cómo funciona por dentro: assembly, memoria, stack y binarios. Empieza por el curso de Reversing (o el de Criptografía si es más lo tuyo) y no te saltes módulos.</p>
+      <div class="cardgrid" style="margin-top:1.1rem">
+        {%- for course in cursos_landing -%}
+        <a class="tcard acc-xor" href="{{ course.url | relative_url }}">
+          <div class="tk">curso · {{ course.nivel | default: "principiante" }}</div>
+          <div class="tt"><svg class="catic ttic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-cap"></use></svg>{{ course.curso }}</div>
+          <p class="td">{{ course.descripcion }}</p>
+          <div class="tf"><span class="go">Ver curso →</span></div>
+        </a>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+
+  <section class="pathstep acc-fwd">
+    <div class="pathnum">03</div>
+    <div class="pathbody">
+      <h2 class="h2">Tus primeros retos</h2>
+      <p class="body">La teoría se asienta resolviendo. Estos crackmes son el punto de entrada perfecto: cógelos en orden y rehazlos tú mismo antes de mirar el writeup.</p>
+      <div class="igrid" style="margin-top:1.1rem">
+        {%- for it in faciles limit: 4 -%}{% include item-card.html item=it %}{%- endfor -%}
+      </div>
+    </div>
+  </section>
+
+  <section class="pathstep acc-ok">
+    <div class="pathnum">04</div>
+    <div class="pathbody">
+      <h2 class="h2">Sube el nivel</h2>
+      <p class="body">Cuando los fundamentos te resulten cómodos, salta a sesiones monográficas sobre una técnica concreta y a retos de dificultad media.</p>
+      <div class="cardgrid" style="margin-top:1.1rem">
+        <a class="tcard acc-fwd" href="{{ '/writeups/' | relative_url }}">
+          <div class="tk">análisis paso a paso</div>
+          <div class="tt"><svg class="catic ttic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-flag"></use></svg>Más writeups</div>
+          <p class="td">CrackMes y CTFs de dificultad creciente, del bug a la flag.</p>
+          <div class="tf"><span class="go">Ver →</span></div>
+        </a>
+        <a class="tcard acc-inv" href="{{ '/masterclass/' | relative_url }}">
+          <div class="tk">sesiones monográficas</div>
+          <div class="tt"><svg class="catic ttic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-present"></use></svg>Masterclass</div>
+          <p class="td">Inmersiones de una sesión en una técnica concreta para quien ya domina lo básico.</p>
+          <div class="tf"><span class="go">Ver →</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="pathstep acc-bad">
+    <div class="pathnum">05</div>
+    <div class="pathbody">
+      <h2 class="h2">El mundo real</h2>
+      <p class="body">Lo que aprendes aplicado a casos reales: causa raíz, impacto y explotación de CVEs, y lecturas de papers técnicos — qué encontraron, cómo y por qué importa.</p>
+
+      <h3 class="pathsub acc-bad"><svg class="catic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-bug"></use></svg>Vulnerabilidades (CVEs)</h3>
+      <div class="igrid">
+        {%- for it in vulns limit: 4 -%}{% include item-card.html item=it %}{%- endfor -%}
+      </div>
+      <div class="pathcta">
+        <a class="btn pathbtn acc-bad" href="{{ '/vulnerabilidades/' | relative_url }}">Ver todas las vulnerabilidades →</a>
+      </div>
+
+      <h3 class="pathsub acc-paper"><svg class="catic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-paper"></use></svg>Papers</h3>
+      <div class="igrid">
+        {%- for it in papers limit: 4 -%}{% include item-card.html item=it %}{%- endfor -%}
+      </div>
+      <div class="pathcta">
+        <a class="btn pathbtn acc-paper" href="{{ '/papers/' | relative_url }}">Ver todos los papers →</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="ctapanel" style="margin-top:3rem">
+  <div class="cl">
+    <div class="ck2">comunidad drovohub</div>
+    <div class="ch">¿Te atascas o quieres feedback?</div>
+    <p class="cp">Comparte tus intentos en el Discord y avanzamos juntos. Nadie aprende esto solo.</p>
+  </div>
+  <a class="btn btn-discord" href="{{ site.author.discord }}" target="_blank" rel="noopener">Únete al Discord ↗</a>
+</div>

@@ -1,0 +1,19 @@
+---
+layout: default
+---
+{%- comment -%} Página de un tag: lista las entradas (de todas las colecciones) con
+   ese tag. `page.entries` la rellena _plugins/tag_pages.rb, ya ordenada. {%- endcomment -%}
+<div class="idxhead acc-inv">
+  <div class="idxchip">
+    <svg class="catic idxic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-flag"></use></svg>
+  </div>
+  <div>
+    <p class="sec-eye">etiqueta</p>
+    <h1 class="h2 acc-inv"><span class="ac">#{{ page.tag }}</span></h1>
+  </div>
+</div>
+<p class="body">{{ page.tag_count }} {% if page.tag_count == 1 %}entrada{% else %}entradas{% endif %} con la etiqueta <b>{{ page.tag }}</b>. <a href="{{ '/' | relative_url }}">Volver al inicio</a>.</p>
+
+<div class="igrid" style="margin-top:1.6rem">
+  {%- for it in page.entries -%}{% include item-card.html item=it %}{%- endfor -%}
+</div>

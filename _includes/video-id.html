@@ -1,0 +1,15 @@
+{%- comment -%}
+Extrae el ID de un vídeo de YouTube a partir de su URL. Uso:
+  {%- capture vid_id -%}{%- include video-id.html url=page.video -%}{%- endcapture -%}
+Devuelve el ID (o cadena vacía). Centraliza la lógica que antes vivía duplicada
+en entry.html; la consumen entry.html y head-seo.html.
+{%- endcomment -%}
+{%- assign _v = include.url -%}
+{%- assign _id = "" -%}
+{%- if _v -%}
+  {%- if _v contains "youtu.be/" -%}{%- assign _id = _v | split: "youtu.be/" | last | split: "?" | first | split: "&" | first -%}
+  {%- elsif _v contains "watch?v=" -%}{%- assign _id = _v | split: "watch?v=" | last | split: "&" | first -%}
+  {%- elsif _v contains "/embed/" -%}{%- assign _id = _v | split: "/embed/" | last | split: "?" | first -%}
+  {%- endif -%}
+{%- endif -%}
+{{- _id | strip -}}
