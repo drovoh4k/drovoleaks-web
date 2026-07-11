@@ -68,8 +68,11 @@ jobs:
           enablement: true   # activa Pages (source=Actions) en el primer run
 
       - name: Build with Jekyll
-        # base_path se resuelve solo: "/<repo>" en project page, "" en dominio raíz.
-        run: bundle exec jekyll build --destination ./_site --baseurl "${{ steps.pages.outputs.base_path }}"
+        # Dominio propio (apex) → baseurl SIEMPRE vacío. Lo fija _config.yml
+        # (baseurl: ""). NO usamos steps.pages.outputs.base_path: en un dominio
+        # raíz sigue devolviendo "/<repo>" mientras Pages no reconozca el dominio
+        # y prefijaría cada asset con /drovoleaks-web/ → 404 en CSS/JS/fuentes/logo.
+        run: bundle exec jekyll build --destination ./_site
         env:
           JEKYLL_ENV: production
 
