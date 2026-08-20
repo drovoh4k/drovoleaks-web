@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # Build diario: publica solo las entradas cuya fecha ya ha llegado
+  # (Jekyll usa future: false, así que una fecha futura no genera página).
+  schedule:
+    - cron: '0 10 * * *'   # 10:00 UTC = 12:00 España (CEST)
 
 permissions:
   contents: read
@@ -51,7 +55,7 @@ jobs:
 
   build:
     needs: validate
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -81,7 +85,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
